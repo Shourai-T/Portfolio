@@ -2,6 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    --bg-primary: #292929;
+    --text-primary: #ffffff;
+    --text-secondary: #d0d0d0;
+    --border-color: rgba(255,255,255,0.08);
+    --icon-muted: rgba(255,255,255,0.6);
+    --hover-bg: rgba(255,255,255,0.1);
+  }
+}
+
 @layer components {
   .animate-float {
     animation: float 6s ease-in-out infinite;
@@ -63,5 +74,16 @@
   }
   100% {
     background-position: 0% 50%;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

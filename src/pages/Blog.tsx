@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
-import { Calendar, Clock, Tag, Eye } from 'lucide-react';
-import { supabase } from '../lib/supabase';
+import { useEffect, useState } from "react";
+import { Calendar, Clock, Tag, Eye } from "lucide-react";
+import { supabase } from "../lib/supabase";
 
 export function Blog() {
   const [posts, setPosts] = useState<any[]>([]);
   const [filteredPosts, setFilteredPosts] = useState<any[]>([]);
-  const [selectedTag, setSelectedTag] = useState<string>('all');
+  const [selectedTag, setSelectedTag] = useState<string>("all");
   const [allTags, setAllTags] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -13,18 +13,18 @@ export function Blog() {
     async function loadPosts() {
       setLoading(true);
       const { data } = await supabase
-        .from('blog_posts')
-        .select('*')
-        .eq('published', true)
-        .order('created_at', { ascending: false });
+        .from("blog_posts")
+        .select("*")
+        .eq("published", true)
+        .order("created_at", { ascending: false });
 
       if (data) {
         setPosts(data);
         setFilteredPosts(data);
 
         const tags = new Set<string>();
-        data.forEach(post => {
-          post.tags.forEach((tag: string) => tags.add(tag));
+        (data as any[]).forEach((post: any) => {
+          post.tags?.forEach((tag: string) => tags.add(tag));
         });
         setAllTags(Array.from(tags).sort());
       }
@@ -35,20 +35,18 @@ export function Blog() {
   }, []);
 
   useEffect(() => {
-    if (selectedTag === 'all') {
+    if (selectedTag === "all") {
       setFilteredPosts(posts);
     } else {
-      setFilteredPosts(
-        posts.filter(post => post.tags.includes(selectedTag))
-      );
+      setFilteredPosts(posts.filter((post) => post.tags.includes(selectedTag)));
     }
   }, [selectedTag, posts]);
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('vi-VN', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+    return new Date(dateString).toLocaleDateString("vi-VN", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
@@ -60,42 +58,45 @@ export function Blog() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
+    <div className="min-h-screen bg-dark-bg py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold text-dark-text mb-4">
             Blog
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Thoughts, tutorials, and insights about web development, technology, and life
+          <p className="text-xl text-dark-text-secondary max-w-3xl mx-auto">
+            Thoughts, tutorials, and insights about web development, technology,
+            and life
           </p>
         </div>
 
         {allTags.length > 0 && (
-          <div className="bg-white rounded-xl shadow-md p-6 mb-8">
+          <div className="bg-dark-hover rounded-xl shadow-md p-6 mb-8 border border-dark-border">
             <div className="flex items-center space-x-3 mb-4">
-              <Tag size={20} className="text-gray-600" />
-              <h2 className="text-lg font-semibold text-gray-900">Filter by Topic</h2>
+              <Tag size={20} className="text-dark-text-secondary" />
+              <h2 className="text-lg font-semibold text-dark-text">
+                Filter by Topic
+              </h2>
             </div>
             <div className="flex flex-wrap gap-2">
               <button
-                onClick={() => setSelectedTag('all')}
+                onClick={() => setSelectedTag("all")}
                 className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                  selectedTag === 'all'
-                    ? 'bg-green-600 text-white shadow-md'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  selectedTag === "all"
+                    ? "bg-white text-dark-bg shadow-md"
+                    : "bg-dark-hover text-dark-text-secondary hover:text-dark-text border border-dark-border"
                 }`}
               >
                 All Posts ({posts.length})
               </button>
-              {allTags.map(tag => (
+              {allTags.map((tag) => (
                 <button
                   key={tag}
                   onClick={() => setSelectedTag(tag)}
                   className={`px-4 py-2 rounded-lg font-medium transition-all ${
                     selectedTag === tag
-                      ? 'bg-green-600 text-white shadow-md'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      ? "bg-white text-dark-bg shadow-md"
+                      : "bg-dark-hover text-dark-text-secondary hover:text-dark-text border border-dark-border"
                   }`}
                 >
                   {tag}
@@ -107,8 +108,11 @@ export function Blog() {
 
         {loading ? (
           <div className="space-y-6">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="bg-white rounded-xl shadow-md p-6 animate-pulse">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="bg-white rounded-xl shadow-md p-6 animate-pulse"
+              >
                 <div className="flex gap-6">
                   <div className="w-64 h-40 bg-gray-200 rounded-lg flex-shrink-0" />
                   <div className="flex-1 space-y-3">
@@ -122,13 +126,13 @@ export function Blog() {
           </div>
         ) : filteredPosts.length === 0 ? (
           <div className="text-center py-16">
-            <div className="text-gray-400 mb-4">
+            <div className="text-dark-text-secondary mb-4">
               <Tag size={48} className="mx-auto" />
             </div>
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">
+            <h3 className="text-xl font-semibold text-dark-text-secondary mb-2">
               No posts found
             </h3>
-            <p className="text-gray-500">
+            <p className="text-dark-text-secondary">
               Try selecting a different topic
             </p>
           </div>
@@ -137,11 +141,11 @@ export function Blog() {
             {filteredPosts.map((post) => (
               <article
                 key={post.id}
-                className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all overflow-hidden group"
+                className="bg-dark-hover rounded-xl shadow-md hover:shadow-xl transition-all overflow-hidden group border border-dark-border"
               >
                 <div className="flex flex-col md:flex-row">
                   {post.cover_image && (
-                    <div className="md:w-72 aspect-video md:aspect-auto bg-gradient-to-br from-green-500 to-blue-600 overflow-hidden flex-shrink-0">
+                    <div className="md:w-72 aspect-video md:aspect-auto bg-white/20 overflow-hidden flex-shrink-0">
                       <img
                         src={post.cover_image}
                         alt={post.title}
@@ -151,7 +155,7 @@ export function Blog() {
                   )}
 
                   <div className="p-6 flex-1">
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 mb-3">
+                    <div className="flex flex-wrap items-center gap-4 text-sm text-dark-text-secondary mb-3">
                       <div className="flex items-center space-x-2">
                         <Calendar size={16} />
                         <span>{formatDate(post.created_at)}</span>
@@ -166,11 +170,11 @@ export function Blog() {
                       </div>
                     </div>
 
-                    <h2 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-green-600 transition-colors">
+                    <h2 className="text-2xl font-bold text-dark-text mb-3 group-hover:text-white transition-colors">
                       {post.title}
                     </h2>
 
-                    <p className="text-gray-600 leading-relaxed mb-4 line-clamp-2">
+                    <p className="text-dark-text-secondary leading-relaxed mb-4 line-clamp-2">
                       {post.excerpt}
                     </p>
 
@@ -178,16 +182,18 @@ export function Blog() {
                       {post.tags.map((tag: string) => (
                         <span
                           key={tag}
-                          className="px-3 py-1 bg-green-50 text-green-600 text-sm rounded-full font-medium"
+                          className="px-3 py-1 bg-white/10 text-white text-sm rounded-full font-medium border border-dark-border"
                         >
                           {tag}
                         </span>
                       ))}
                     </div>
 
-                    <button className="text-green-600 hover:text-green-700 font-medium flex items-center space-x-2 group/btn">
+                    <button className="text-white hover:text-white/80 font-medium flex items-center space-x-2 group/btn">
                       <span>Read More</span>
-                      <span className="group-hover/btn:translate-x-1 transition-transform">→</span>
+                      <span className="group-hover/btn:translate-x-1 transition-transform">
+                        →
+                      </span>
                     </button>
                   </div>
                 </div>

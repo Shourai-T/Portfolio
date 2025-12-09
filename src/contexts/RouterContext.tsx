@@ -1,24 +1,41 @@
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  ReactNode,
+} from "react";
 
-type Page = 'home' | 'projects' | 'blog' | 'photos' | 'about' | 'contact';
+type Page =
+  | "home"
+  | "projects"
+  | "project-detail"
+  | "blog"
+  | "photos"
+  | "about"
+  | "contact"
+  | "resume";
 
 interface RouterContextType {
   currentPage: Page;
-  navigate: (page: Page) => void;
+  projectSlug?: string;
+  navigate: (page: Page, slug?: string) => void;
 }
 
 const RouterContext = createContext<RouterContextType | undefined>(undefined);
 
 export function RouterProvider({ children }: { children: ReactNode }) {
-  const [currentPage, setCurrentPage] = useState<Page>('home');
+  const [currentPage, setCurrentPage] = useState<Page>("home");
+  const [projectSlug, setProjectSlug] = useState<string>();
 
-  const navigate = useCallback((page: Page) => {
+  const navigate = useCallback((page: Page, slug?: string) => {
     setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setProjectSlug(slug);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
   return (
-    <RouterContext.Provider value={{ currentPage, navigate }}>
+    <RouterContext.Provider value={{ currentPage, projectSlug, navigate }}>
       {children}
     </RouterContext.Provider>
   );
@@ -27,7 +44,7 @@ export function RouterProvider({ children }: { children: ReactNode }) {
 export function useRouter() {
   const context = useContext(RouterContext);
   if (!context) {
-    throw new Error('useRouter must be used within RouterProvider');
+    throw new Error("useRouter must be used within RouterProvider");
   }
   return context;
 }

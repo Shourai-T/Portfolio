@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from "react";
 
 interface Node {
   x: number;
@@ -11,6 +11,32 @@ interface Node {
   baseOpacity: number;
 }
 
+// Configuration constants - Điều chỉnh các giá trị này để thay đổi hiệu ứng particle
+const CONFIG = {
+  // Node settings - Cài đặt số lượng và kích thước particles
+  MIN_NODE_COUNT: 120, // Số lượng node tối thiểu trên màn hình
+  MAX_NODE_COUNT: 200, // Số lượng node tối đa trên màn hình
+  NODE_DENSITY: 10000, // Mật độ node (càng cao = càng ít node). Tính theo pixels²/node
+  NODE_MIN_RADIUS: 0.3, // Bán kính nhỏ nhất của mỗi node (pixels)
+  NODE_MAX_RADIUS: 1, // Bán kính lớn nhất của mỗi node (pixels)
+  NODE_SPEED: 0.8, // Tốc độ di chuyển ngẫu nhiên của nodes (pixels/frame)
+
+  // Connection settings - Cài đặt đường nối giữa các nodes
+  CONNECTION_DISTANCE: 200, // Khoảng cách tối đa để vẽ đường nối giữa 2 nodes (pixels)
+  CONNECTION_OPACITY: 0.9, // Độ mờ tối đa của đường nối (0-1)
+  LINE_WIDTH: 0.3, // Độ dày của đường nối (pixels)
+
+  // Physics settings - Cài đặt vật lý tương tác
+  REPULSION_RADIUS: 200, // Bán kính vùng đẩy khi di chuột (pixels)
+  REPULSION_STRENGTH: 2, // Độ mạnh lực đẩy khi di chuột (càng cao = đẩy mạnh hơn)
+  RETURN_DAMPING: 0.015, // Tốc độ node quay về vị trí gốc (0-1, càng cao = về nhanh hơn)
+  VELOCITY_DAMPING: 0.88, // Hệ số giảm tốc độ theo thời gian (0-1, càng thấp = chậm lại nhanh hơn)
+
+  // Visual settings - Cài đặt hiển thị
+  NODE_BASE_OPACITY_MIN: 0.3, // Độ mờ tối thiểu của node (0-1)
+  NODE_BASE_OPACITY_MAX: 0.7, // Độ mờ tối đa của node (0-1)
+};
+
 export function ParticleBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const nodesRef = useRef<Node[]>([]);
@@ -19,14 +45,15 @@ export function ParticleBackground() {
   const isMobileRef = useRef(false);
 
   useEffect(() => {
-    isMobileRef.current = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      navigator.userAgent
-    );
+    isMobileRef.current =
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      );
 
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d', { alpha: true });
+    const ctx = canvas.getContext("2d", { alpha: true });
     if (!ctx) return;
 
     const setCanvasSize = () => {
@@ -37,25 +64,31 @@ export function ParticleBackground() {
 
     const initializeNodes = () => {
       const nodes: Node[] = [];
-      const minCount = 100;
-      const maxCount = 300;
       const area = window.innerWidth * window.innerHeight;
-      let nodeCount = Math.floor(area / 8000);
-      nodeCount = Math.max(minCount, Math.min(maxCount, nodeCount));
+      let nodeCount = Math.floor(area / CONFIG.NODE_DENSITY);
+      nodeCount = Math.max(
+        CONFIG.MIN_NODE_COUNT,
+        Math.min(CONFIG.MAX_NODE_COUNT, nodeCount)
+      );
 
       for (let i = 0; i < nodeCount; i++) {
         const x = Math.random() * canvas.width;
         const y = Math.random() * canvas.height;
-        const baseOpacity = Math.random() * 0.4 + 0.3;
+        const baseOpacity =
+          Math.random() *
+            (CONFIG.NODE_BASE_OPACITY_MAX - CONFIG.NODE_BASE_OPACITY_MIN) +
+          CONFIG.NODE_BASE_OPACITY_MIN;
 
         nodes.push({
           x,
           y,
-          vx: (Math.random() - 0.5) * 0.3,
-          vy: (Math.random() - 0.5) * 0.3,
+          vx: (Math.random() - 0.5) * CONFIG.NODE_SPEED,
+          vy: (Math.random() - 0.5) * CONFIG.NODE_SPEED,
           baseX: x,
           baseY: y,
-          radius: Math.random() * 1.5 + 1,
+          radius:
+            Math.random() * (CONFIG.NODE_MAX_RADIUS - CONFIG.NODE_MIN_RADIUS) +
+            CONFIG.NODE_MIN_RADIUS,
           baseOpacity,
         });
       }
@@ -73,20 +106,9 @@ export function ParticleBackground() {
       mouseRef.current.active = false;
     };
 
-    const distance = (x1: number, y1: number, x2: number, y2: number) => {
-      const dx = x2 - x1;
-      const dy = y2 - y1;
-      return Math.sqrt(dx * dx + dy * dy);
-    };
-
     const update = () => {
       const nodes = nodesRef.current;
       const mouse = mouseRef.current;
-      const REPULSION_RADIUS = 150;
-      const REPULSION_STRENGTH = 1.2;
-      const RETURN_DAMPING = 0.015;
-      const VELOCITY_DAMPING = 0.88;
-      const CONNECTION_DISTANCE = 120;
 
       nodes.forEach((node) => {
         let forceX = 0;
@@ -97,8 +119,9 @@ export function ParticleBackground() {
           const dy = node.y - mouse.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
 
-          if (dist < REPULSION_RADIUS && dist > 0) {
-            const repulsionForce = (1 - dist / REPULSION_RADIUS) * REPULSION_STRENGTH;
+          if (dist < CONFIG.REPULSION_RADIUS && dist > 0) {
+            const repulsionForce =
+              (1 - dist / CONFIG.REPULSION_RADIUS) * CONFIG.REPULSION_STRENGTH;
             forceX = (dx / dist) * repulsionForce;
             forceY = (dy / dist) * repulsionForce;
 
@@ -107,14 +130,14 @@ export function ParticleBackground() {
           }
         }
 
-        node.vx *= VELOCITY_DAMPING;
-        node.vy *= VELOCITY_DAMPING;
+        node.vx *= CONFIG.VELOCITY_DAMPING;
+        node.vy *= CONFIG.VELOCITY_DAMPING;
 
         node.x += node.vx;
         node.y += node.vy;
 
-        const returnForceX = (node.baseX - node.x) * RETURN_DAMPING;
-        const returnForceY = (node.baseY - node.y) * RETURN_DAMPING;
+        const returnForceX = (node.baseX - node.x) * CONFIG.RETURN_DAMPING;
+        const returnForceY = (node.baseY - node.y) * CONFIG.RETURN_DAMPING;
 
         node.x += returnForceX;
         node.y += returnForceY;
@@ -141,9 +164,12 @@ export function ParticleBackground() {
           node.radius * 3
         );
 
-        gradient.addColorStop(0, `rgba(100, 150, 255, ${node.baseOpacity})`);
-        gradient.addColorStop(0.5, `rgba(100, 150, 255, ${node.baseOpacity * 0.6})`);
-        gradient.addColorStop(1, `rgba(100, 150, 255, 0)`);
+        gradient.addColorStop(0, `rgba(255, 255, 255, ${node.baseOpacity})`);
+        gradient.addColorStop(
+          0.5,
+          `rgba(255, 255, 255, ${node.baseOpacity * 0.6})`
+        );
+        gradient.addColorStop(1, `rgba(255, 255, 255, 0)`);
 
         ctx.fillStyle = gradient;
         ctx.beginPath();
@@ -157,10 +183,12 @@ export function ParticleBackground() {
           const dy = nodes[j].y - nodes[i].y;
           const dist = Math.sqrt(dx * dx + dy * dy);
 
-          if (dist < 120) {
-            const opacity = (1 - dist / 120) * 0.5;
-            ctx.strokeStyle = `rgba(100, 150, 255, ${opacity})`;
-            ctx.lineWidth = 0.8;
+          if (dist < CONFIG.CONNECTION_DISTANCE) {
+            const opacity =
+              (1 - dist / CONFIG.CONNECTION_DISTANCE) *
+              CONFIG.CONNECTION_OPACITY;
+            ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
+            ctx.lineWidth = CONFIG.LINE_WIDTH;
             ctx.beginPath();
             ctx.moveTo(nodes[i].x, nodes[i].y);
             ctx.lineTo(nodes[j].x, nodes[j].y);
@@ -179,14 +207,14 @@ export function ParticleBackground() {
     setCanvasSize();
     animate();
 
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseleave', handleMouseLeave);
-    window.addEventListener('resize', setCanvasSize);
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseleave", handleMouseLeave);
+    window.addEventListener("resize", setCanvasSize);
 
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseleave', handleMouseLeave);
-      window.removeEventListener('resize', setCanvasSize);
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseleave", handleMouseLeave);
+      window.removeEventListener("resize", setCanvasSize);
 
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
@@ -199,8 +227,8 @@ export function ParticleBackground() {
       ref={canvasRef}
       className="fixed top-0 left-0 w-full h-full pointer-events-none"
       style={{
-        background: 'transparent',
-        willChange: 'transform',
+        background: "transparent",
+        willChange: "transform",
       }}
     />
   );
