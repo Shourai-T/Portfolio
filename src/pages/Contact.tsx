@@ -6,8 +6,12 @@ import {
   Send,
   CheckCircle,
   AlertCircle,
+  Github,
+  Linkedin,
+  Twitter,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
+import { ParticleBackground } from "../components/ParticleBackground";
 
 export function Contact() {
   const [formData, setFormData] = useState({
@@ -60,16 +64,22 @@ export function Contact() {
 
   return (
     <div className="min-h-screen bg-dark-bg py-12">
+      <ParticleBackground />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* 1️⃣ HEADER SECTION */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-dark-text mb-4">
+          <h1 className="text-sm font-medium text-primary uppercase tracking-wider mb-4 text-white">
             Get In Touch
           </h1>
+          <h2 className="text-4xl md:text-6xl font-bold tracking-tight font-serif text-dark-text mb-6">
+            Contact Me
+          </h2>
           <p className="text-xl text-dark-text-secondary max-w-3xl mx-auto">
             Have a project in mind? Let's discuss how we can work together
           </p>
         </div>
 
+        {/* 2️⃣ CONTACT INFO SECTION */}
         <div className="grid md:grid-cols-3 gap-8 mb-12">
           <div className="bg-dark-hover rounded-xl shadow-md p-8 text-center hover:shadow-xl transition-shadow border border-dark-border">
             <div className="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -77,10 +87,10 @@ export function Contact() {
             </div>
             <h3 className="text-lg font-bold text-dark-text mb-2">Email</h3>
             <a
-              href="mailto:contact@example.com"
+              href="mailto:anhtuannguyen112004@gmail.com"
               className="text-white hover:text-white/80"
             >
-              contact@example.com
+              anhtuannguyen112004@gmail.com
             </a>
           </div>
 
@@ -244,25 +254,28 @@ export function Contact() {
                 href="https://github.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-6 py-3 bg-dark-hover rounded-lg shadow-md hover:shadow-lg transition-all font-medium text-dark-text hover:text-white border border-dark-border"
+                className="p-4 bg-dark-hover rounded-full shadow-md hover:shadow-lg transition-all text-dark-text hover:text-white border border-dark-border hover:bg-dark-hover/80 hover:scale-110"
+                aria-label="GitHub"
               >
-                GitHub
+                <Github size={24} />
               </a>
               <a
                 href="https://linkedin.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-6 py-3 bg-dark-hover rounded-lg shadow-md hover:shadow-lg transition-all font-medium text-dark-text hover:text-white border border-dark-border"
+                className="p-4 bg-dark-hover rounded-full shadow-md hover:shadow-lg transition-all text-dark-text hover:text-white border border-dark-border hover:bg-dark-hover/80 hover:scale-110"
+                aria-label="LinkedIn"
               >
-                LinkedIn
+                <Linkedin size={24} />
               </a>
               <a
                 href="https://twitter.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-6 py-3 bg-dark-hover rounded-lg shadow-md hover:shadow-lg transition-all font-medium text-dark-text hover:text-white border border-dark-border"
+                className="p-4 bg-dark-hover rounded-full shadow-md hover:shadow-lg transition-all text-dark-text hover:text-white border border-dark-border hover:bg-dark-hover/80 hover:scale-110"
+                aria-label="Twitter"
               >
-                Twitter
+                <Twitter size={24} />
               </a>
             </div>
           </div>

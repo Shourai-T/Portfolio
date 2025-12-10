@@ -6,236 +6,85 @@ import {
   ChevronLeft,
   ChevronRight,
   GitBranch,
+  Loader2,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useRouter } from "../contexts/RouterContext";
 import { ParticleBackground } from "../components/ParticleBackground";
+import { SearchBar } from "../components/SearchBar";
+import { FilterBar } from "../components/FilterBar";
+import { fetchGitHubRepos, TransformedRepo } from "../lib/github";
 
 const PROJECTS_PER_PAGE = 6;
 
+interface Project {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  content: string;
+  image_url: string;
+  demo_url?: string | null;
+  github_url?: string | null;
+  tags: string[];
+  featured: boolean;
+  published: boolean;
+  created_at: string;
+}
+
 export function Projects() {
   const { navigate } = useRouter();
-  const [projects, setProjects] = useState<any[]>([]);
-  const [openSourceProjects, setOpenSourceProjects] = useState<any[]>([]);
-  const [filteredProjects, setFilteredProjects] = useState<any[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [openSourceProjects, setOpenSourceProjects] = useState<
+    TransformedRepo[]
+  >([]);
+  const [filteredProjects, setFilteredProjects] = useState<Project[]>([]);
   const [selectedTag, setSelectedTag] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [loading, setLoading] = useState(true);
-
-  // All available tags/categories
-  const allTags = [
-    "All",
-    "Next.js",
-    "React",
-    "Vue.js",
-    "Angular",
-    "TypeScript",
-    "JavaScript",
-    "Node.js",
-    "Express",
-    "Django",
-    "FastAPI",
-    "Python",
-    "Java",
-    "C#",
-    "Golang",
-    "Rust",
-    "Frontend",
-    "Backend",
-    "Full Stack",
-    "Mobile",
-    "DevOps",
-    "Cloud",
-    "Database",
-    "API",
-    "Tools",
-    "Open Source",
-    "Guestbook",
-  ];
+  const [filterTags, setFilterTags] = useState<string[]>(["All"]);
 
   useEffect(() => {
-    async function loadProjects() {
+    async function loadData() {
       setLoading(true);
+      try {
+        // 1. Load Featured Projects from Supabase (Published only)
+        const { data: projectsData, error } = await supabase
+          .from("projects")
+          .select("*")
+          .eq("published", true)
+          .order("created_at", { ascending: false });
 
-      // Load featured projects
-      const { data: projectsData } = await supabase
-        .from("projects")
-        .select("*")
-        .order("order_index");
+        if (error) throw error;
+        setProjects(projectsData || []);
+        setFilteredProjects(projectsData || []);
 
-      // Load open source projects
-      const { data: openSourceData } = await supabase
-        .from("projects")
-        .select("*")
-        .eq("is_open_source", true)
-        .order("created_at", { ascending: false });
+        // 2. Load Open Source from GitHub
+        const githubData = await fetchGitHubRepos("shourai-t");
+        setOpenSourceProjects(githubData);
 
-      // Use mock data for featured projects (always)
-      const mockProjects = [
-        {
-          id: 1,
-          title: "Portfolio Website",
-          description:
-            "A modern portfolio website built with React, TypeScript, and Tailwind CSS featuring dark theme and smooth animations.",
-          image_url:
-            "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=533&fit=crop",
-          tags: ["Next.js", "Frontend", "Tools"],
-          demo_url: "https://example.com",
-          github_url: "https://github.com/example/portfolio",
-          featured: true,
-        },
-        {
-          id: 2,
-          title: "Task Management App",
-          description:
-            "Full-stack task management application with real-time updates and collaborative features.",
-          image_url:
-            "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=800&h=533&fit=crop",
-          tags: ["Next.js", "Frontend"],
-          demo_url: "https://example.com",
-          github_url: "https://github.com/example/tasks",
-        },
-        {
-          id: 3,
-          title: "E-Commerce Platform",
-          description:
-            "Modern e-commerce solution with payment integration and inventory management.",
-          image_url:
-            "https://images.unsplash.com/photo-1557821552-17105176677c?w=800&h=533&fit=crop",
-          tags: ["Java", "Frontend"],
-          demo_url: "https://example.com",
-          github_url: "https://github.com/example/ecommerce",
-        },
-        {
-          id: 4,
-          title: "Weather Dashboard",
-          description:
-            "Real-time weather dashboard with forecasts and interactive maps.",
-          image_url:
-            "https://images.unsplash.com/photo-1592210454359-9043f067919b?w=800&h=533&fit=crop",
-          tags: ["Frontend", "Tools"],
-          demo_url: "https://example.com",
-          github_url: "https://github.com/example/weather",
-        },
-        {
-          id: 5,
-          title: "Chat Application",
-          description:
-            "Real-time chat application with WebSocket support and message encryption.",
-          image_url:
-            "https://images.unsplash.com/photo-1611746872915-64382b5c76da?w=800&h=533&fit=crop",
-          tags: ["Next.js", "Frontend"],
-          demo_url: "https://example.com",
-          github_url: "https://github.com/example/chat",
-        },
-        {
-          id: 6,
-          title: "Blog Platform",
-          description:
-            "Content management system with markdown support and SEO optimization.",
-          image_url:
-            "https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=800&h=533&fit=crop",
-          tags: ["Next.js", "Tools"],
-          demo_url: "https://example.com",
-          github_url: "https://github.com/example/blog",
-        },
-        {
-          id: 7,
-          title: "Fitness Tracker",
-          description:
-            "Track your workouts, nutrition, and progress with detailed analytics.",
-          image_url:
-            "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800&h=533&fit=crop",
-          tags: ["Frontend", "Tools"],
-          demo_url: "https://example.com",
-          github_url: "https://github.com/example/fitness",
-        },
-      ];
-      // Always use mock data for now
-      setProjects(mockProjects);
-      setFilteredProjects(mockProjects);
+        // 3. Load Tags
+        const { data: tagsData } = await supabase
+          .from("tags")
+          .select("name")
+          .eq("type", "project")
+          .order("name");
 
-      // Use mock data for open source (always)
-      const mockOpenSource = [
-        {
-          id: 1,
-          title: "react-ui-components",
-          description:
-            "A collection of reusable React components with TypeScript support",
-          tech_stack: ["React", "TypeScript"],
-          github_url: "https://github.com/example/react-ui",
-          branches: 5,
-        },
-        {
-          id: 2,
-          title: "tailwind-utilities",
-          description:
-            "Custom Tailwind CSS utilities and plugins for rapid development",
-          tech_stack: ["CSS", "Tailwind"],
-          github_url: "https://github.com/example/tailwind-utils",
-          branches: 3,
-        },
-        {
-          id: 3,
-          title: "node-api-boilerplate",
-          description:
-            "Production-ready Node.js API boilerplate with authentication",
-          tech_stack: ["Node.js", "Express"],
-          github_url: "https://github.com/example/node-api",
-          branches: 8,
-        },
-        {
-          id: 4,
-          title: "python-data-tools",
-          description:
-            "Data analysis and visualization tools built with Python",
-          tech_stack: ["Python", "Pandas"],
-          github_url: "https://github.com/example/python-tools",
-          branches: 4,
-        },
-        {
-          id: 5,
-          title: "java-spring-starter",
-          description: "Spring Boot starter template with best practices",
-          tech_stack: ["Java", "Spring"],
-          github_url: "https://github.com/example/spring-starter",
-          branches: 6,
-        },
-        {
-          id: 6,
-          title: "cli-dev-tools",
-          description:
-            "Command-line tools for developers to boost productivity",
-          tech_stack: ["Go", "CLI"],
-          github_url: "https://github.com/example/cli-tools",
-          branches: 2,
-        },
-        {
-          id: 7,
-          title: "docker-templates",
-          description: "Docker and docker-compose templates for various stacks",
-          tech_stack: ["Docker", "DevOps"],
-          github_url: "https://github.com/example/docker-templates",
-          branches: 7,
-        },
-        {
-          id: 8,
-          title: "vscode-theme-pack",
-          description:
-            "Beautiful VS Code themes with consistent color palettes",
-          tech_stack: ["JSON", "VSCode"],
-          github_url: "https://github.com/example/vscode-themes",
-          branches: 3,
-        },
-      ];
-      // Always use mock data for now
-      setOpenSourceProjects(mockOpenSource);
-
-      setLoading(false);
+        if (tagsData) {
+          setFilterTags(["All", ...tagsData.map((t) => t.name)]);
+        } else {
+          // Fallback if no tags table yet or empty
+          setFilterTags(["All"]);
+        }
+      } catch (error) {
+        console.error("Error loading data:", error);
+      } finally {
+        setLoading(false);
+      }
     }
 
-    loadProjects();
+    loadData();
   }, []);
 
   // Filter projects based on tag and search query
@@ -245,7 +94,9 @@ export function Projects() {
     // Filter by tag
     if (selectedTag !== "All") {
       filtered = filtered.filter((project) =>
-        project.tags?.includes(selectedTag)
+        project.tags?.some(
+          (tag) => tag.toLowerCase() === selectedTag.toLowerCase()
+        )
       );
     }
 
@@ -254,7 +105,10 @@ export function Projects() {
       filtered = filtered.filter(
         (project) =>
           project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          project.description.toLowerCase().includes(searchQuery.toLowerCase())
+          (project.description &&
+            project.description
+              .toLowerCase()
+              .includes(searchQuery.toLowerCase()))
       );
     }
 
@@ -275,15 +129,15 @@ export function Projects() {
   };
 
   return (
-    <div className="min-h-screen bg-dark-bg py-12">
+    <div className="min-h-screen bg-dark-bg py-12 relative">
       <ParticleBackground />
       {/* 1️⃣ SECTION TITLE (HEADER) */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12 max-w-3xl mx-auto">
-          <h1 className="text-5xl md:text-6xl font-bold text-dark-text mb-4">
+          <h1 className="text-sm font-medium text-white uppercase tracking-wider mb-4">
             My Work
           </h1>
-          <h2 className="text-2xl md:text-3xl font-semibold text-dark-text-secondary mb-6">
+          <h2 className="text-4xl md:text-6xl font-bold tracking-tight font-serif text-white mb-6">
             Projects & Open Source
           </h2>
           <p className="text-lg" style={{ color: "rgba(255,255,255,0.7)" }}>
@@ -294,47 +148,31 @@ export function Projects() {
 
         {/* 2️⃣ SEARCH BAR */}
         <div className="mb-12 max-w-2xl mx-auto">
-          <div className="relative">
-            <Search
-              size={20}
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 text-dark-text-secondary"
-            />
-            <input
-              type="text"
-              placeholder="Search project and repo..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-4 bg-[#1e1e1e] text-dark-text rounded-xl border border-white/10 focus:border-white/30 focus:outline-none transition-colors placeholder:text-dark-text-secondary"
-            />
-          </div>
+          <SearchBar
+            value={searchQuery}
+            onChange={setSearchQuery}
+            placeholder="Search project..."
+          />
         </div>
 
         {/* 3️⃣ FILTER BUTTONS (TAGS) */}
-        <div className="flex flex-wrap justify-center gap-2 mb-16 max-w-3xl mx-auto">
-          {allTags.map((tag) => (
-            <button
-              key={tag}
-              onClick={() => setSelectedTag(tag)}
-              className={`backdrop-blur-sm inline-flex items-center justify-center gap-2 whitespace-nowrap font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive px-4 py-2 has-[>svg]:px-3 rounded-full text-sm h-8 ${
-                selectedTag === tag
-                  ? "bg-white text-dark-bg hover:bg-white/90"
-                  : "bg-white/10 text-dark-text hover:bg-white/20"
-              }`}
-            >
-              {tag}
-            </button>
-          ))}
+        <div className="mb-16 max-w-3xl mx-auto">
+          <FilterBar
+            tags={filterTags}
+            selectedTag={selectedTag}
+            onSelectTag={setSelectedTag}
+          />
         </div>
 
         {/* 4️⃣ FEATURED PROJECT LIST */}
         <section className="mb-16">
-          <h2 className="text-4xl font-bold text-dark-text mb-8">
+          <h2 className="text-4xl font-bold text-white mb-8">
             Featured Projects
           </h2>
 
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-12">
-              {[1, 2, 3].map((i) => (
+              {[1, 2, 3, 4].map((i) => (
                 <div
                   key={i}
                   className="flex flex-col gap-4 bg-[#1a1a1a] rounded-2xl p-6 border border-white/10 animate-pulse"
@@ -353,7 +191,7 @@ export function Projects() {
               <div className="text-dark-text-secondary mb-4">
                 <Search size={48} className="mx-auto" />
               </div>
-              <h3 className="text-xl font-semibold text-dark-text-secondary mb-2">
+              <h3 className="text-xl font-semibold text-white mb-2">
                 No projects found
               </h3>
               <p className="text-dark-text-secondary">
@@ -364,14 +202,9 @@ export function Projects() {
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-12">
                 {paginatedProjects.map((project, index) => {
-                  const slug = project.title
-                    .toLowerCase()
-                    .replace(/\s+/g, "-")
-                    .replace(/[^\w-]/g, "");
-                  
                   const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
                     e.preventDefault();
-                    navigate("project-detail", slug);
+                    navigate("project-detail", project.slug);
                   };
 
                   return (
@@ -384,69 +217,73 @@ export function Projects() {
                       }}
                     >
                       {/* Image with Hover Icons */}
-                    <div className="aspect-video relative overflow-hidden rounded-2xl border border-white/10">
-                      <img
-                        src={project.image_url}
-                        alt={project.title}
-                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
+                      <div className="aspect-video relative overflow-hidden rounded-2xl border border-white/10 bg-[#1a1a1a]">
+                        <img
+                          src={project.image_url}
+                          alt={project.title}
+                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 opacity-90 group-hover:opacity-100"
+                        />
 
-                      {/* Hover Overlay with Icons */}
-                      <div className="absolute bottom-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        {project.github_url && (
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              window.open(project.github_url, "_blank");
-                            }}
-                            className="backdrop-blur-sm inline-flex items-center justify-center h-8 w-8 rounded-full bg-white/90 text-dark-bg hover:bg-white transition-colors shadow-sm"
-                          >
-                            <Github className="h-4 w-4" />
-                          </button>
-                        )}
-                        {project.demo_url && (
-                          <button
-                            onClick={(e) => {
-                              e.preventDefault();
-                              window.open(project.demo_url, "_blank");
-                            }}
-                            className="backdrop-blur-sm inline-flex items-center justify-center h-8 w-8 rounded-full bg-white/90 text-dark-bg hover:bg-white transition-colors shadow-sm"
-                          >
-                            <ExternalLink className="h-4 w-4" />
-                          </button>
-                        )}
+                        {/* Hover Overlay with Icons */}
+                        <div className="absolute bottom-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          {project.github_url && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                window.open(
+                                  project.github_url || undefined,
+                                  "_blank"
+                                );
+                              }}
+                              className="backdrop-blur-sm inline-flex items-center justify-center h-10 w-10 rounded-full bg-white text-dark-bg hover:bg-gray-200 transition-colors shadow-lg"
+                              title="View Code"
+                            >
+                              <Github className="h-5 w-5" />
+                            </button>
+                          )}
+                          {project.demo_url && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                window.open(
+                                  project.demo_url || undefined,
+                                  "_blank"
+                                );
+                              }}
+                              className="backdrop-blur-sm inline-flex items-center justify-center h-10 w-10 rounded-full bg-white text-dark-bg hover:bg-gray-200 transition-colors shadow-lg"
+                              title="Live Demo"
+                            >
+                              <ExternalLink className="h-5 w-5" />
+                            </button>
+                          )}
+                        </div>
                       </div>
-                    </div>
 
-                    {/* Content */}
-                    <div className="space-y-3">
-                      <h2 className="text-2xl font-bold text-dark-text group-hover:text-white transition-colors leading-tight">
-                        {project.title}
-                      </h2>
+                      {/* Content */}
+                      <div className="space-y-3">
+                        <h2 className="text-2xl font-bold text-white group-hover:underline decoration-1 underline-offset-4 transition-all leading-tight">
+                          {project.title}
+                        </h2>
 
-                      <p
-                        className="line-clamp-2 text-base leading-relaxed"
-                        style={{ color: "rgba(255,255,255,0.7)" }}
-                      >
-                        {project.description}
-                      </p>
+                        <p
+                          className="line-clamp-2 text-base leading-relaxed"
+                          style={{ color: "rgba(255,255,255,0.7)" }}
+                        >
+                          {project.description}
+                        </p>
 
-                      {/* Tech Tags */}
-                      <div className="flex flex-wrap gap-2">
-                        {project.tags?.map((tag: string, idx: number) => (
-                          <span
-                            key={idx}
-                            className={`text-xs px-2 py-1 rounded-md font-medium ${
-                              idx < 5
-                                ? "bg-white/10 text-white"
-                                : "border border-white/20 text-dark-text-secondary"
-                            }`}
-                          >
-                            {tag}
-                          </span>
-                        ))}
+                        {/* Tech Tags */}
+                        <div className="flex flex-wrap gap-2">
+                          {project.tags?.map((tag: string, idx: number) => (
+                            <span
+                              key={idx}
+                              className={`text-xs px-2.5 py-1 rounded-md font-medium border border-white/10 bg-white/5 text-dark-text-secondary`}
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
                       </div>
-                    </div>
                     </div>
                   );
                 })}
@@ -458,7 +295,7 @@ export function Projects() {
                   <button
                     onClick={() => handlePageChange(currentPage - 1)}
                     disabled={currentPage === 1}
-                    className="p-2 rounded-lg bg-[#1a1a1a] text-dark-text border border-white/10 hover:border-white/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                    className="p-2 rounded-lg bg-[#1a1a1a] text-white border border-white/10 hover:border-white/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                   >
                     <ChevronLeft size={20} />
                   </button>
@@ -471,7 +308,7 @@ export function Projects() {
                         className={`w-10 h-10 rounded-lg font-semibold transition-all ${
                           currentPage === page
                             ? "bg-white text-dark-bg shadow-lg"
-                            : "bg-[#1a1a1a] text-dark-text border border-white/10 hover:border-white/30"
+                            : "bg-[#1a1a1a] text-white border border-white/10 hover:border-white/30"
                         }`}
                       >
                         {page}
@@ -482,7 +319,7 @@ export function Projects() {
                   <button
                     onClick={() => handlePageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
-                    className="p-2 rounded-lg bg-[#1a1a1a] text-dark-text border border-white/10 hover:border-white/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                    className="p-2 rounded-lg bg-[#1a1a1a] text-white border border-white/10 hover:border-white/30 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                   >
                     <ChevronRight size={20} />
                   </button>
@@ -494,64 +331,70 @@ export function Projects() {
 
         {/* 5️⃣ OPEN SOURCE CONTRIBUTIONS SECTION */}
         <section className="relative z-10 pt-20 pb-12">
-          <h2 className="text-4xl font-bold text-dark-text mb-8">
+          <h2 className="text-4xl font-bold text-white mb-8">
             Open Source Contributions
           </h2>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {openSourceProjects.map((project, index) => (
-              <div
-                key={project.id}
-                className="group bg-[#1a1a1a] p-6 rounded-xl border border-white/10 hover:border-white/20 transition-all duration-300 cursor-pointer hover:bg-[#252525]"
-                style={{
-                  animation: `fadeIn 0.5s ease-out ${index * 0.05}s both`,
-                }}
-              >
-                {/* Title with GitHub Icon */}
-                <div className="flex items-start justify-between mb-3 gap-2">
-                  <h3 className="text-lg font-bold text-dark-text group-hover:text-white transition-colors flex-1">
-                    {project.title}
-                  </h3>
-                  {project.github_url && (
-                    <a
-                      href={project.github_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-shrink-0 text-dark-text-secondary hover:text-white transition-colors"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <Github size={20} />
-                    </a>
-                  )}
-                </div>
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="animate-spin text-white w-8 h-8" />
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {openSourceProjects.length > 0 ? (
+                openSourceProjects.map((project, index) => (
+                  <div
+                    key={project.id}
+                    className="group bg-[#1a1a1a] p-6 rounded-xl border border-white/10 hover:border-white/20 transition-all duration-300 cursor-pointer hover:bg-[#252525]"
+                    onClick={() => window.open(project.github_url, "_blank")}
+                    style={{
+                      animation: `fadeIn 0.5s ease-out ${index * 0.05}s both`,
+                    }}
+                  >
+                    {/* Title with GitHub Icon */}
+                    <div className="flex items-start justify-between mb-3 gap-2">
+                      <h3 className="text-lg font-bold text-white group-hover:underline decoration-1 underline-offset-4 transition-all flex-1 line-clamp-1">
+                        {project.title}
+                      </h3>
+                      <Github
+                        size={20}
+                        className="text-dark-text-secondary group-hover:text-white"
+                      />
+                    </div>
 
-                {/* Description */}
-                <p className="text-dark-text-secondary text-sm leading-relaxed mb-4 line-clamp-2">
-                  {project.description}
-                </p>
+                    {/* Description */}
+                    <p className="text-dark-text-secondary text-sm leading-relaxed mb-4 line-clamp-2 min-h-[40px]">
+                      {project.description}
+                    </p>
 
-                {/* Tags (optional) */}
-                {project.tech_stack && project.tech_stack[0] && (
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {project.tech_stack.slice(0, 2).map((tech: string) => (
-                      <span
-                        key={tech}
-                        className="px-3 py-1 text-xs bg-white/10 text-white rounded-full border border-white/20"
-                      >
-                        {tech}
-                      </span>
-                    ))}
+                    {/* Tags (optional) */}
+                    {project.tech_stack && project.tech_stack[0] && (
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {project.tech_stack.slice(0, 2).map((tech: string) => (
+                          <span
+                            key={tech}
+                            className="px-3 py-1 text-xs bg-white/10 text-white rounded-full border border-white/20"
+                          >
+                            {tech}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Branch Count */}
+                    <div className="flex items-center text-dark-text-secondary text-sm">
+                      <GitBranch size={16} className="mr-1" />
+                      <span>{project.branches || 1} branches</span>
+                    </div>
                   </div>
-                )}
-
-                {/* Branch Count */}
-                <div className="flex items-center text-dark-text-secondary text-sm">
-                  <GitBranch size={16} className="mr-1" />
-                  <span>{project.branches || 1} branches</span>
+                ))
+              ) : (
+                <div className="col-span-full text-center text-dark-text-secondary">
+                  Unable to load GitHub repositories.
                 </div>
-              </div>
-            ))}
-          </div>
+              )}
+            </div>
+          )}
         </section>
       </div>
     </div>

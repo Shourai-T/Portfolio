@@ -132,74 +132,35 @@ const MOCK_RECENT_PHOTOS = [
   },
 ];
 
-const MOCK_OPEN_SOURCE_PROJECTS = [
-  {
-    id: 1,
-    title: "react-components-lib",
-    description:
-      "A collection of reusable React components for modern web applications",
-    tech_stack: ["TypeScript"],
-  },
-  {
-    id: 2,
-    title: "api-gateway",
-    description:
-      "Lightweight API gateway with rate limiting and authentication",
-    tech_stack: ["Node.js"],
-  },
-  {
-    id: 3,
-    title: "css-animations",
-    description: "Beautiful CSS animations and transitions library",
-    tech_stack: ["CSS"],
-  },
-  {
-    id: 4,
-    title: "data-visualizer",
-    description: "Interactive data visualization toolkit built with D3.js",
-    tech_stack: ["JavaScript"],
-  },
-];
-
 export function Home() {
   const [featuredProjects, setFeaturedProjects] = useState<any[]>(
     MOCK_FEATURED_PROJECTS
   );
   const [recentPosts, setRecentPosts] = useState<any[]>(MOCK_RECENT_POSTS);
   const [recentPhotos, setRecentPhotos] = useState<any[]>(MOCK_RECENT_PHOTOS);
-  const [openSourceProjects, setOpenSourceProjects] = useState<any[]>(
-    MOCK_OPEN_SOURCE_PROJECTS
-  );
 
   useEffect(() => {
     async function loadData() {
-      const [projectsRes, postsRes, photosRes, openSourceRes] =
-        await Promise.all([
-          supabase
-            .from("projects")
-            .select("*")
-            .eq("featured", true)
-            .order("order_index")
-            .limit(5),
-          supabase
-            .from("blog_posts")
-            .select("*")
-            .eq("published", true)
-            .order("created_at", { ascending: false })
-            .limit(3),
-          supabase
-            .from("photos")
-            .select("*")
-            .eq("featured", true)
-            .order("order_index")
-            .limit(6),
-          supabase
-            .from("projects")
-            .select("*")
-            .eq("featured", false)
-            .order("created_at", { ascending: false })
-            .limit(4),
-        ]);
+      const [projectsRes, postsRes, photosRes] = await Promise.all([
+        supabase
+          .from("projects")
+          .select("*")
+          .eq("featured", true)
+          .order("order_index")
+          .limit(5),
+        supabase
+          .from("blog_posts")
+          .select("*")
+          .eq("published", true)
+          .order("created_at", { ascending: false })
+          .limit(3),
+        supabase
+          .from("photos")
+          .select("*")
+          .eq("featured", true)
+          .order("order_index")
+          .limit(6),
+      ]);
 
       // Only override mock data if real data exists
       if (projectsRes.data && projectsRes.data.length > 0)
@@ -208,8 +169,6 @@ export function Home() {
         setRecentPosts(postsRes.data);
       if (photosRes.data && photosRes.data.length > 0)
         setRecentPhotos(photosRes.data);
-      if (openSourceRes.data && openSourceRes.data.length > 0)
-        setOpenSourceProjects(openSourceRes.data);
     }
 
     loadData();
@@ -220,7 +179,7 @@ export function Home() {
       <HeroSection />
       <RecentBlogSection posts={recentPosts} />
       <FeaturedProjectsSection projects={featuredProjects} />
-      <OpenSourceSection projects={openSourceProjects} />
+      <OpenSourceSection />
       <LocketGallerySection photos={recentPhotos} />
 
       {/* CTA Section */}

@@ -1,5 +1,6 @@
-import { Search } from "lucide-react";
+import { Search, LogIn, LayoutDashboard } from "lucide-react";
 import { useRouter } from "../contexts/RouterContext";
+import { useAuth } from "../contexts/AuthContext";
 
 interface NavigationProps {
   onOpenSearch: () => void;
@@ -7,6 +8,7 @@ interface NavigationProps {
 
 export function Navigation({ onOpenSearch }: NavigationProps) {
   const { currentPage, navigate } = useRouter();
+  const { user, isAdmin } = useAuth();
 
   const navItems = [
     { id: "home" as const, label: "Home" },
@@ -14,6 +16,7 @@ export function Navigation({ onOpenSearch }: NavigationProps) {
     { id: "blog" as const, label: "Blog" },
     { id: "photos" as const, label: "Photos" },
     { id: "about" as const, label: "About" },
+    { id: "resume" as const, label: "Resume" },
     { id: "contact" as const, label: "Contact" },
   ];
 
@@ -26,7 +29,7 @@ export function Navigation({ onOpenSearch }: NavigationProps) {
               onClick={() => navigate("home")}
               className="text-xl font-bold text-dark-text hover:text-white transition-colors"
             >
-              Nguyễn Anh Tuấn
+              _Shourai.dev
             </button>
 
             <div className="hidden md:flex items-center space-x-1">
@@ -46,16 +49,42 @@ export function Navigation({ onOpenSearch }: NavigationProps) {
             </div>
           </div>
 
-          <button
-            onClick={onOpenSearch}
-            className="flex items-center space-x-2 px-4 py-2 text-sm text-dark-text-secondary bg-dark-hover rounded-lg hover:bg-dark-hover transition-colors border border-dark-border"
-          >
-            <Search size={16} />
-            <span className="hidden sm:inline">Search</span>
-            <kbd className="hidden sm:inline px-2 py-0.5 text-xs font-semibold text-dark-text bg-dark-hover border border-dark-border rounded">
-              ⌘K
-            </kbd>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onOpenSearch}
+              className="flex items-center space-x-2 px-4 py-2 text-sm text-dark-text-secondary bg-dark-hover rounded-lg hover:bg-dark-hover transition-colors border border-dark-border"
+            >
+              <Search size={16} />
+              <span className="hidden sm:inline">Search</span>
+              <kbd className="hidden sm:inline px-2 py-0.5 text-xs font-semibold text-dark-text bg-dark-hover border border-dark-border rounded">
+                ⌘K
+              </kbd>
+            </button>
+
+            <button
+              onClick={() =>
+                navigate(user ? (isAdmin ? "admin" : "home") : "login")
+              }
+              className={`flex items-center justify-center w-10 h-10 rounded-lg transition-colors border ${
+                currentPage === "login" || currentPage === "admin"
+                  ? "bg-dark-hover text-white border-dark-border"
+                  : "text-dark-text-secondary hover:text-white border-transparent hover:bg-dark-hover"
+              }`}
+              title={
+                user
+                  ? isAdmin
+                    ? "Admin Dashboard"
+                    : "Already Logged In"
+                  : "Login"
+              }
+            >
+              {user && isAdmin ? (
+                <LayoutDashboard size={20} />
+              ) : (
+                <LogIn size={20} />
+              )}
+            </button>
+          </div>
         </div>
 
         <div className="md:hidden pb-3 flex flex-wrap gap-2">

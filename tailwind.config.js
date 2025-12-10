@@ -4,7 +4,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        'dark-bg': '#292929',
+        'dark-bg': '#1a1a1a',
         'dark-text': '#ffffff',
         'dark-text-secondary': '#d0d0d0',
         'dark-border': 'rgba(255,255,255,0.08)',

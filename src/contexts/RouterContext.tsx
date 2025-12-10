@@ -14,7 +14,14 @@ type Page =
   | "photos"
   | "about"
   | "contact"
-  | "resume";
+  | "resume"
+  | "admin"
+  | "admin-projects"
+  | "admin-projects-new"
+  | "admin-projects-edit"
+  | "admin-tags"
+  | "blog-detail"
+  | "login";
 
 interface RouterContextType {
   currentPage: Page;

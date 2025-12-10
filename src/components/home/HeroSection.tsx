@@ -21,7 +21,7 @@ export function HeroSection() {
         <div className="mb-8 flex justify-center">
           <div className="w-32 h-32 rounded-full border-4 border-white/20 overflow-hidden shadow-2xl">
             <img
-              src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop"
+              src="https://github.com/shourai-t.png"
               alt="Avatar"
               className="w-full h-full object-cover"
             />
