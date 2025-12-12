@@ -9,8 +9,14 @@ import {
 import { useRouter } from "../../contexts/RouterContext";
 import { ParticleBackground } from "../ParticleBackground";
 
-export function HeroSection() {
+interface HeroSectionProps {
+  profile?: any;
+}
+
+export function HeroSection({ profile }: HeroSectionProps) {
   const { navigate } = useRouter();
+
+  const social = profile?.social_links || {};
 
   return (
     <section className="min-h-screen relative flex items-center justify-center overflow-hidden bg-dark-bg">
@@ -30,20 +36,23 @@ export function HeroSection() {
 
         {/* Name */}
         <h1 className="text-5xl md:text-7xl font-bold text-dark-text mb-2 leading-tight">
-          Nguyễn Anh Tuấn
+          {profile?.full_name || "Nguyễn Anh Tuấn"}
         </h1>
 
         {/* Role */}
         <p className="text-xl md:text-2xl text-dark-text-secondary font-semibold mb-6">
-          Fullstack Developer
+          {profile?.role || "Fullstack Developer"}
         </p>
 
         {/* Introduction */}
-        <p className="text-base md:text-lg text-dark-text-secondary mb-12 max-w-2xl mx-auto leading-relaxed">
-          I build beautiful, functional web applications with modern
-          technologies. Passionate about creating elegant solutions and
-          exceptional user experiences.
-        </p>
+        <div
+          className="text-base md:text-lg text-dark-text-secondary mb-12 max-w-2xl mx-auto leading-relaxed prose prose-invert"
+          dangerouslySetInnerHTML={{
+            __html:
+              profile?.short_bio ||
+              "I build beautiful, functional web applications with modern technologies. Passionate about creating elegant solutions and exceptional user experiences.",
+          }}
+        />
 
         {/* CTA Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
@@ -67,39 +76,45 @@ export function HeroSection() {
 
         {/* Social Icons - No Background */}
         <div className="flex justify-center gap-8">
-          <a
-            href="https://github.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group"
-          >
-            <Github
-              size={28}
-              className="text-dark-text-secondary group-hover:text-white transition-colors duration-300"
-            />
-          </a>
-          <a
-            href="https://linkedin.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group"
-          >
-            <Linkedin
-              size={28}
-              className="text-dark-text-secondary group-hover:text-white transition-colors duration-300"
-            />
-          </a>
-          <a
-            href="https://facebook.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group"
-          >
-            <Facebook
-              size={28}
-              className="text-dark-text-secondary group-hover:text-white transition-colors duration-300"
-            />
-          </a>
+          {social.github && (
+            <a
+              href={social.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group"
+            >
+              <Github
+                size={28}
+                className="text-dark-text-secondary group-hover:text-white transition-colors duration-300"
+              />
+            </a>
+          )}
+          {social.linkedin && (
+            <a
+              href={social.linkedin}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group"
+            >
+              <Linkedin
+                size={28}
+                className="text-dark-text-secondary group-hover:text-white transition-colors duration-300"
+              />
+            </a>
+          )}
+          {social.facebook && (
+            <a
+              href={social.facebook}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group"
+            >
+              <Facebook
+                size={28}
+                className="text-dark-text-secondary group-hover:text-white transition-colors duration-300"
+              />
+            </a>
+          )}
           <button onClick={() => navigate("contact")} className="group">
             <Mail
               size={28}

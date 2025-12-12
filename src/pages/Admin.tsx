@@ -2,10 +2,11 @@ import {
   LogOut,
   LayoutDashboard,
   FileText,
-  Image,
   Briefcase,
   MessageSquare,
+  Image as ImageIcon,
   Tag,
+  User,
 } from "lucide-react";
 import { useRouter } from "../contexts/RouterContext";
 import { useAuth } from "../contexts/AuthContext";
@@ -106,13 +107,13 @@ export function Admin() {
     {
       title: "Photos",
       count: stats.photos,
-      icon: Image,
-      color: "text-white",
-      bg: "bg-dark-hover",
-      desc: "Gallery Images",
+      icon: ImageIcon,
+      path: "admin-photos",
+      color: "from-purple-500 to-pink-500",
+      description: "Manage your photo gallery",
     },
     {
-      title: "Comments",
+      title: "Contact", // Changed from "Comments"
       count: stats.messages,
       icon: MessageSquare,
       color: "text-white",
@@ -126,6 +127,15 @@ export function Admin() {
       color: "text-white",
       bg: "bg-dark-hover",
       desc: "Manage Filters",
+    },
+    {
+      title: "Settings",
+      count: 0,
+      icon: User,
+      path: "admin-about",
+      color: "text-white",
+      bg: "bg-dark-hover",
+      desc: "Manage Profile & About",
     },
   ];
 
@@ -163,12 +173,15 @@ export function Admin() {
             <div
               key={index}
               onClick={() => {
+                if (card.path) {
+                  navigate(card.path as any);
+                  return;
+                }
                 if (index === 0) navigate("admin-projects");
+                if (card.title === "Blog Posts") navigate("admin-blog");
                 if (card.title === "Tags") navigate("admin-tags");
               }}
-              className={`bg-dark-bg backdrop-blur-md border border-dark-border p-6 rounded-2xl hover:border-white/50 transition-all hover:-translate-y-1 hover:shadow-xl group ${
-                index === 0 || card.title === "Tags" ? "cursor-pointer" : ""
-              }`}
+              className={`bg-dark-bg backdrop-blur-md border border-dark-border p-6 rounded-2xl hover:border-white/50 transition-all hover:-translate-y-1 hover:shadow-xl group cursor-pointer`}
             >
               <div className="flex justify-between items-start mb-4">
                 <div

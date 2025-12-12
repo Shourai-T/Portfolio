@@ -114,6 +114,7 @@ export interface Database {
           featured: boolean
           order_index: number
           created_at: string
+          updated_at: string
         }
         Insert: {
           id?: string
@@ -126,6 +127,7 @@ export interface Database {
           featured?: boolean
           order_index?: number
           created_at?: string
+          updated_at?: string
         }
         Update: {
           id?: string
@@ -138,6 +140,7 @@ export interface Database {
           featured?: boolean
           order_index?: number
           created_at?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -252,6 +255,138 @@ export interface Database {
             referencedColumns: ["id"]
           }
         ]
+      }
+      profile: {
+        Row: {
+          id: string
+          full_name: string
+          role: string
+          short_bio: string | null
+          about_content: string | null
+          social_links: Json | null
+          resume_url: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          full_name: string
+          role: string
+          short_bio?: string | null
+          about_content?: string | null
+          social_links?: Json | null
+          resume_url?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          full_name?: string
+          role?: string
+          short_bio?: string | null
+          about_content?: string | null
+          social_links?: Json | null
+          resume_url?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      educations: {
+        Row: {
+          id: string
+          school: string
+          major: string | null
+          degree: string | null
+          start_date: string | null
+          end_date: string | null
+          description: string | null
+          order_index: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          school: string
+          major?: string | null
+          degree?: string | null
+          start_date?: string | null
+          end_date?: string | null
+          description?: string | null
+          order_index?: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          school?: string
+          major?: string | null
+          degree?: string | null
+          start_date?: string | null
+          end_date?: string | null
+          description?: string | null
+          order_index?: number
+          created_at?: string
+        }
+        Relationships: []
+      }
+      experiences: {
+        Row: {
+          id: string
+          company: string
+          position: string
+          start_date: string | null
+          end_date: string | null
+          description: string | null
+          order_index: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          company: string
+          position: string
+          start_date?: string | null
+          end_date?: string | null
+          description?: string | null
+          order_index?: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          company?: string
+          position?: string
+          start_date?: string | null
+          end_date?: string | null
+          description?: string | null
+          order_index?: number
+          created_at?: string
+        }
+        Relationships: []
+      }
+      technical_skills: {
+        Row: {
+          id: string
+          name: string
+          category: string
+          proficiency: number
+          order_index: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          category: string
+          proficiency?: number
+          order_index?: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          category?: string
+          proficiency?: number
+          order_index?: number
+          created_at?: string
+        }
+        Relationships: []
       }
     }
     Views: {

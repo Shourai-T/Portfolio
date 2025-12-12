@@ -11,20 +11,23 @@ import {
   Quote,
   Heading1,
   Heading2,
+  Heading3,
   Link as LinkIcon,
   Image as ImageIcon,
-  undo as UndoIcon,
-  redo as RedoIcon,
   RotateCcw,
   RotateCw,
+  TerminalSquare,
+  Minus,
+  Undo as UndoIcon,
+  Redo as RedoIcon,
 } from "lucide-react";
 
 interface RichTextEditorProps {
-  value: string;
+  content: string;
   onChange: (content: string) => void;
 }
 
-export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
+export function RichTextEditor({ content, onChange }: RichTextEditorProps) {
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -33,7 +36,7 @@ export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
       }),
       Image,
     ],
-    content: value,
+    content: content,
     editorProps: {
       attributes: {
         class:
@@ -85,6 +88,13 @@ export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
           isActive={editor.isActive("heading", { level: 2 })}
           icon={<Heading2 size={18} />}
         />
+        <ToolbarButton
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 3 }).run()
+          }
+          isActive={editor.isActive("heading", { level: 3 })}
+          icon={<Heading3 size={18} />}
+        />
         <div className="w-px h-6 bg-dark-border mx-1 self-center" />
 
         <ToolbarButton
@@ -100,7 +110,12 @@ export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleCode().run()}
           isActive={editor.isActive("code")}
-          icon={<Code size={18} />}
+          icon={<Code size={18} title="Inline Code" />}
+        />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+          isActive={editor.isActive("codeBlock")}
+          icon={<TerminalSquare size={18} title="Code Block" />}
         />
 
         <div className="w-px h-6 bg-dark-border mx-1 self-center" />
@@ -119,6 +134,11 @@ export function RichTextEditor({ value, onChange }: RichTextEditorProps) {
           onClick={() => editor.chain().focus().toggleBlockquote().run()}
           isActive={editor.isActive("blockquote")}
           icon={<Quote size={18} />}
+        />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().setHorizontalRule().run()}
+          isActive={false}
+          icon={<Minus size={18} title="Horizontal Rule" />}
         />
 
         <div className="w-px h-6 bg-dark-border mx-1 self-center" />

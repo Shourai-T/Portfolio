@@ -5,9 +5,14 @@ import { supabase } from "../../lib/supabase";
 interface ImageUploadProps {
   value?: string;
   onChange: (url: string) => void;
+  onUploading?: (isUploading: boolean) => void;
 }
 
-export function ImageUpload({ value, onChange }: ImageUploadProps) {
+export function ImageUpload({
+  value,
+  onChange,
+  onUploading,
+}: ImageUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -15,6 +20,7 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
   const handleUpload = async (file: File) => {
     try {
       setUploading(true);
+      onUploading?.(true);
       setError(null);
 
       // Validate file
@@ -50,6 +56,7 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
       setError(err.message);
     } finally {
       setUploading(false);
+      onUploading?.(false);
     }
   };
 

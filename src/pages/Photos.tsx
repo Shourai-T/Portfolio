@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react";
-import { Image as ImageIcon, X, Grid, List } from "lucide-react";
+import { Image as ImageIcon, X, Settings } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { MOCK_PHOTOS } from "../data/photos";
 import { FilterBar } from "../components/FilterBar";
 import { ParticleBackground } from "../components/ParticleBackground";
+import { useAuth } from "../contexts/AuthContext";
+import { useRouter } from "../contexts/RouterContext";
 
 export function Photos() {
+  const { isAdmin } = useAuth();
+  const { navigate } = useRouter();
   const [photos, setPhotos] = useState<any[]>([]);
   const [filteredPhotos, setFilteredPhotos] = useState<any[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
@@ -50,8 +54,19 @@ export function Photos() {
   }, [selectedCategory, photos]);
 
   return (
-    <div className="min-h-screen bg-dark-bg py-12">
+    <div className="min-h-screen bg-dark-bg py-12 relative">
       <ParticleBackground />
+
+      {isAdmin && (
+        <button
+          onClick={() => navigate("admin-photos")}
+          className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-2 bg-white text-dark-bg rounded-full font-bold shadow-lg hover:bg-gray-100 transition-all hover:scale-105"
+        >
+          <Settings size={20} />
+          Manage Photos
+        </button>
+      )}
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* 1️⃣ HEADER SECTION */}
         <div className="text-center mb-12">
@@ -158,7 +173,7 @@ export function Photos() {
                 </p>
               )}
               <div className="flex flex-wrap justify-center gap-2 mt-4">
-                {selectedPhoto.tags.map((tag: string) => (
+                {selectedPhoto.tags?.map((tag: string) => (
                   <span
                     key={tag}
                     className="px-3 py-1 bg-white/20 text-white text-sm rounded-full"

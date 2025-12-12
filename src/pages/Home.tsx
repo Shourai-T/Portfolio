@@ -138,9 +138,16 @@ export function Home() {
   );
   const [recentPosts, setRecentPosts] = useState<any[]>(MOCK_RECENT_POSTS);
   const [recentPhotos, setRecentPhotos] = useState<any[]>(MOCK_RECENT_PHOTOS);
+  const [profile, setProfile] = useState<any>(null);
 
   useEffect(() => {
     async function loadData() {
+      const { data: profileData } = await supabase
+        .from("profile")
+        .select("*")
+        .single();
+      if (profileData) setProfile(profileData);
+
       const [projectsRes, postsRes, photosRes] = await Promise.all([
         supabase
           .from("projects")
@@ -176,7 +183,7 @@ export function Home() {
 
   return (
     <div className="bg-dark-bg">
-      <HeroSection />
+      <HeroSection profile={profile} />
       <RecentBlogSection posts={recentPosts} />
       <FeaturedProjectsSection projects={featuredProjects} />
       <OpenSourceSection />

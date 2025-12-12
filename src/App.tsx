@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Toaster } from "react-hot-toast";
 import { RouterProvider, useRouter } from "./contexts/RouterContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { Navigation } from "./components/Navigation";
@@ -19,6 +20,13 @@ import { ProjectList } from "./pages/admin/ProjectList";
 import { AddProject } from "./pages/admin/AddProject";
 import { EditProject } from "./pages/admin/EditProject";
 import { TagManager } from "./pages/admin/TagManager";
+import { BlogList } from "./pages/admin/BlogList";
+import { AddBlog } from "./pages/admin/AddBlog";
+import { EditBlog } from "./pages/admin/EditBlog";
+import { PhotoList } from "./pages/admin/PhotoList";
+import { AddPhoto } from "./pages/admin/AddPhoto";
+import { EditPhoto } from "./pages/admin/EditPhoto";
+import { AboutSettings } from "./pages/admin/AboutSettings";
 
 import { BlogDetail } from "./pages/BlogDetail";
 
@@ -70,6 +78,20 @@ function AppContent() {
         return <EditProject />;
       case "admin-tags":
         return <TagManager />;
+      case "admin-blog":
+        return <BlogList />;
+      case "admin-blog-new":
+        return <AddBlog />;
+      case "admin-blog-edit":
+        return <EditBlog id={projectSlug || ""} />;
+      case "admin-photos":
+        return <PhotoList />;
+      case "admin-photos-new":
+        return <AddPhoto />;
+      case "admin-photos-edit":
+        return <EditPhoto id={projectSlug || ""} />;
+      case "admin-about":
+        return <AboutSettings />;
       default:
         return <Home />;
     }
@@ -77,6 +99,15 @@ function AppContent() {
 
   return (
     <div className="min-h-screen bg-dark-bg text-dark-text">
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          style: {
+            background: "#333",
+            color: "#fff",
+          },
+        }}
+      />
       <Navigation onOpenSearch={() => setIsSearchOpen(true)} />
       {renderPage()}
       <CommandPalette

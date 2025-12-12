@@ -1,17 +1,18 @@
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect } from "react";
 import {
   Mail,
   MapPin,
   Phone,
   Send,
-  CheckCircle,
-  AlertCircle,
   Github,
   Linkedin,
   Twitter,
+  Facebook,
+  Instagram,
 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { ParticleBackground } from "../components/ParticleBackground";
+import { toast } from "react-hot-toast";
 
 export function Contact() {
   const [formData, setFormData] = useState({
@@ -23,12 +24,24 @@ export function Contact() {
   const [status, setStatus] = useState<
     "idle" | "sending" | "success" | "error"
   >("idle");
-  const [errorMessage, setErrorMessage] = useState("");
+  const [profile, setProfile] = useState<any>(null);
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const fetchProfile = async () => {
+    try {
+      const { data } = await supabase.from("profile").select("*").single();
+      if (data) setProfile(data);
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+    }
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setStatus("sending");
-    setErrorMessage("");
 
     try {
       const { error } = await supabase.from("contact_messages").insert({
@@ -42,6 +55,7 @@ export function Contact() {
       if (error) throw error;
 
       setStatus("success");
+      toast.success("Message sent successfully!");
       setFormData({ name: "", email: "", subject: "", message: "" });
 
       setTimeout(() => {
@@ -49,9 +63,7 @@ export function Contact() {
       }, 5000);
     } catch (error: any) {
       setStatus("error");
-      setErrorMessage(
-        error.message || "Failed to send message. Please try again."
-      );
+      toast.error(error.message || "Failed to send message. Please try again.");
       setTimeout(() => {
         setStatus("idle");
       }, 5000);
@@ -61,6 +73,8 @@ export function Contact() {
   const handleChange = (field: string, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
+
+  const social = profile?.social_links || {};
 
   return (
     <div className="min-h-screen bg-dark-bg py-12">
@@ -87,10 +101,10 @@ export function Contact() {
             </div>
             <h3 className="text-lg font-bold text-dark-text mb-2">Email</h3>
             <a
-              href="mailto:anhtuannguyen112004@gmail.com"
-              className="text-white hover:text-white/80"
+              href={`mailto:${social.email || "anhtuannguyen112004@gmail.com"}`}
+              className="text-white hover:text-white/80 break-all"
             >
-              anhtuannguyen112004@gmail.com
+              {social.email || "anhtuannguyen112004@gmail.com"}
             </a>
           </div>
 
@@ -99,12 +113,10 @@ export function Contact() {
               <Phone className="text-white" size={24} />
             </div>
             <h3 className="text-lg font-bold text-dark-text mb-2">Phone</h3>
-            <a
-              href="tel:+84123456789"
-              className="text-white hover:text-white/80"
-            >
-              +84 123 456 789
-            </a>
+            <p className="text-white">
+              {/* Phone is not stored in DB currently, keep static or generic if not available */}
+              +84 788713056
+            </p>
           </div>
 
           <div className="bg-dark-hover rounded-xl shadow-md p-8 text-center hover:shadow-xl transition-shadow border border-dark-border">
@@ -123,34 +135,6 @@ export function Contact() {
             <h2 className="text-2xl font-bold text-dark-text mb-6">
               Send Me a Message
             </h2>
-
-            {status === "success" && (
-              <div className="mb-6 p-4 bg-white/10 border border-white/30 rounded-lg flex items-start space-x-3">
-                <CheckCircle
-                  className="text-white flex-shrink-0 mt-0.5"
-                  size={20}
-                />
-                <div>
-                  <h4 className="font-semibold text-white">Message Sent!</h4>
-                  <p className="text-white/80 text-sm">
-                    Thank you for reaching out. I'll get back to you soon!
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {status === "error" && (
-              <div className="mb-6 p-4 bg-white/10 border border-white/30 rounded-lg flex items-start space-x-3">
-                <AlertCircle
-                  className="text-white flex-shrink-0 mt-0.5"
-                  size={20}
-                />
-                <div>
-                  <h4 className="font-semibold text-white">Error</h4>
-                  <p className="text-white/80 text-sm">{errorMessage}</p>
-                </div>
-              </div>
-            )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid md:grid-cols-2 gap-6">
@@ -250,33 +234,61 @@ export function Contact() {
           <div className="mt-8 text-center text-dark-text-secondary">
             <p className="mb-4">Or connect with me on social media</p>
             <div className="flex items-center justify-center space-x-4">
-              <a
-                href="https://github.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-4 bg-dark-hover rounded-full shadow-md hover:shadow-lg transition-all text-dark-text hover:text-white border border-dark-border hover:bg-dark-hover/80 hover:scale-110"
-                aria-label="GitHub"
-              >
-                <Github size={24} />
-              </a>
-              <a
-                href="https://linkedin.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-4 bg-dark-hover rounded-full shadow-md hover:shadow-lg transition-all text-dark-text hover:text-white border border-dark-border hover:bg-dark-hover/80 hover:scale-110"
-                aria-label="LinkedIn"
-              >
-                <Linkedin size={24} />
-              </a>
-              <a
-                href="https://twitter.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="p-4 bg-dark-hover rounded-full shadow-md hover:shadow-lg transition-all text-dark-text hover:text-white border border-dark-border hover:bg-dark-hover/80 hover:scale-110"
-                aria-label="Twitter"
-              >
-                <Twitter size={24} />
-              </a>
+              {social.github && (
+                <a
+                  href={social.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-4 bg-dark-hover rounded-full shadow-md hover:shadow-lg transition-all text-dark-text hover:text-white border border-dark-border hover:bg-dark-hover/80 hover:scale-110"
+                  aria-label="GitHub"
+                >
+                  <Github size={24} />
+                </a>
+              )}
+              {social.linkedin && (
+                <a
+                  href={social.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-4 bg-dark-hover rounded-full shadow-md hover:shadow-lg transition-all text-dark-text hover:text-white border border-dark-border hover:bg-dark-hover/80 hover:scale-110"
+                  aria-label="LinkedIn"
+                >
+                  <Linkedin size={24} />
+                </a>
+              )}
+              {social.twitter && (
+                <a
+                  href={social.twitter}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-4 bg-dark-hover rounded-full shadow-md hover:shadow-lg transition-all text-dark-text hover:text-white border border-dark-border hover:bg-dark-hover/80 hover:scale-110"
+                  aria-label="Twitter"
+                >
+                  <Twitter size={24} />
+                </a>
+              )}
+              {social.facebook && (
+                <a
+                  href={social.facebook}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-4 bg-dark-hover rounded-full shadow-md hover:shadow-lg transition-all text-dark-text hover:text-white border border-dark-border hover:bg-dark-hover/80 hover:scale-110"
+                  aria-label="Facebook"
+                >
+                  <Facebook size={24} />
+                </a>
+              )}
+              {social.instagram && (
+                <a
+                  href={social.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="p-4 bg-dark-hover rounded-full shadow-md hover:shadow-lg transition-all text-dark-text hover:text-white border border-dark-border hover:bg-dark-hover/80 hover:scale-110"
+                  aria-label="Instagram"
+                >
+                  <Instagram size={24} />
+                </a>
+              )}
             </div>
           </div>
         </div>
