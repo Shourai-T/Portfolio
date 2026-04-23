@@ -28,7 +28,9 @@ type Page =
   | "admin-photos-new"
   | "admin-photos-edit"
   | "admin-about"
+  | "admin-about"
   | "blog-detail"
+  | "tools"
   | "login";
 
 interface RouterContextType {
@@ -64,6 +66,8 @@ export function RouterProvider({ children }: { children: ReactNode }) {
         return "/contact";
       case "resume":
         return "/resume";
+      case "tools":
+        return "/tools";
       case "login":
         return "/login";
       case "admin":
@@ -108,6 +112,7 @@ export function RouterProvider({ children }: { children: ReactNode }) {
     if (path === "/about") return { page: "about" };
     if (path === "/contact") return { page: "contact" };
     if (path === "/resume") return { page: "resume" };
+    if (path === "/tools") return { page: "tools" };
     if (path === "/login") return { page: "login" };
     if (path === "/admin") return { page: "admin" };
 

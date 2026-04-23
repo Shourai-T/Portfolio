@@ -4,9 +4,10 @@ import { useAuth } from "../contexts/AuthContext";
 
 interface NavigationProps {
   onOpenSearch: () => void;
+  logoUrl?: string | null;
 }
 
-export function Navigation({ onOpenSearch }: NavigationProps) {
+export function Navigation({ onOpenSearch, logoUrl }: NavigationProps) {
   const { currentPage, navigate } = useRouter();
   const { user, isAdmin } = useAuth();
 
@@ -15,6 +16,7 @@ export function Navigation({ onOpenSearch }: NavigationProps) {
     { id: "projects" as const, label: "Projects" },
     { id: "blog" as const, label: "Blog" },
     { id: "photos" as const, label: "Photos" },
+    { id: "tools" as const, label: "Tools" },
     { id: "about" as const, label: "About" },
     { id: "resume" as const, label: "Resume" },
     { id: "contact" as const, label: "Contact" },
@@ -27,9 +29,17 @@ export function Navigation({ onOpenSearch }: NavigationProps) {
           <div className="flex items-center space-x-8">
             <button
               onClick={() => navigate("home")}
-              className="text-xl font-bold text-dark-text hover:text-white transition-colors"
+              className="text-xl font-bold text-dark-text hover:text-white transition-colors flex items-center"
             >
-              _Shourai.dev
+              {logoUrl ? (
+                <img
+                  src={logoUrl}
+                  alt="Logo"
+                  className="h-8 w-auto object-contain"
+                />
+              ) : (
+                "_Shourai.dev"
+              )}
             </button>
 
             <div className="hidden md:flex items-center space-x-1">

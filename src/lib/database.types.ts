@@ -265,6 +265,9 @@ export interface Database {
           about_content: string | null
           social_links: Json | null
           resume_url: string | null
+          avatar_url: string | null
+          logo_url: string | null
+          favicon_url: string | null
           created_at: string
           updated_at: string
         }
@@ -276,6 +279,9 @@ export interface Database {
           about_content?: string | null
           social_links?: Json | null
           resume_url?: string | null
+          avatar_url?: string | null
+          logo_url?: string | null
+          favicon_url?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -287,6 +293,9 @@ export interface Database {
           about_content?: string | null
           social_links?: Json | null
           resume_url?: string | null
+          avatar_url?: string | null
+          logo_url?: string | null
+          favicon_url?: string | null
           created_at?: string
           updated_at?: string
         }

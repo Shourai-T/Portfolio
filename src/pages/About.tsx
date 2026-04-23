@@ -152,7 +152,7 @@ export function About() {
         {/* Bio Section - Rich Text */}
         <div className="mb-16">
           <div
-            className="prose prose-invert max-w-none text-lg leading-relaxed text-dark-text-secondary font-medium"
+            className="prose prose-invert max-w-none text-lg leading-relaxed text-dark-text-secondary font-medium [&_p]:my-4 [&_p]:min-h-[24px]"
             dangerouslySetInnerHTML={{ __html: profile?.about_content || "" }}
           />
         </div>

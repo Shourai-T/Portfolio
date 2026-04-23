@@ -11,9 +11,11 @@ import {
   GraduationCap,
   Briefcase,
   Code2,
+  Palette,
 } from "lucide-react";
 import { ParticleBackground } from "../../components/ParticleBackground";
 import { RichTextEditor } from "../../components/admin/RichTextEditor";
+import { ImageUpload } from "../../components/admin/ImageUpload";
 
 type Tab =
   | "personal"
@@ -21,7 +23,9 @@ type Tab =
   | "about"
   | "education"
   | "experience"
-  | "skills";
+  | "experience"
+  | "skills"
+  | "branding";
 
 export function AboutSettings() {
   const [activeTab, setActiveTab] = useState<Tab>("personal");
@@ -39,6 +43,12 @@ export function AboutSettings() {
     register: registerSocial,
     handleSubmit: handleSocial,
     setValue: setSocial,
+  } = useForm();
+  const {
+    register: registerBranding,
+    handleSubmit: handleBranding,
+    setValue: setBranding,
+    watch: watchBranding,
   } = useForm();
 
   const [aboutContent, setAboutContent] = useState("");
@@ -72,6 +82,10 @@ export function AboutSettings() {
         setSocial("instagram", social.instagram);
 
         setAboutContent(data.about_content || "");
+
+        // Branding
+        setBranding("logo_url", data.logo_url);
+        setBranding("favicon_url", data.favicon_url);
       }
     } catch (error) {
       console.error("Error fetching profile:", error);
@@ -181,6 +195,40 @@ export function AboutSettings() {
     }
   };
 
+  const onSaveBranding = async (data: any) => {
+    try {
+      setLoading(true);
+      const updates = {
+        updated_at: new Date().toISOString(),
+        logo_url: data.logo_url,
+        favicon_url: data.favicon_url,
+      };
+
+      if (profileId) {
+        await supabase.from("profile").update(updates).eq("id", profileId);
+      } else {
+        const { data: newProfile } = await supabase
+          .from("profile")
+          .insert([
+            {
+              ...updates,
+              full_name: "New User",
+              role: "Developer",
+            },
+          ])
+          .select()
+          .single();
+        if (newProfile) setProfileId(newProfile.id);
+      }
+      toast.success("Branding info saved!");
+    } catch (error) {
+      console.error(error);
+      toast.error("Error saving branding info");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const tabs = [
     { id: "personal", label: "Personal Info", icon: User },
     { id: "social", label: "Social Links", icon: LinkIcon },
@@ -188,6 +236,7 @@ export function AboutSettings() {
     { id: "education", label: "Education", icon: GraduationCap },
     { id: "experience", label: "Experience", icon: Briefcase },
     { id: "skills", label: "Tech Skills", icon: Code2 },
+    { id: "branding", label: "Branding", icon: Palette },
   ];
 
   return (
@@ -374,6 +423,49 @@ export function AboutSettings() {
 
             {/* SKILLS TAB */}
             {activeTab === "skills" && <SkillsManager />}
+
+            {/* BRANDING TAB */}
+            {activeTab === "branding" && (
+              <form
+                onSubmit={handleBranding(onSaveBranding)}
+                className="space-y-6"
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <div>
+                    <label className="block text-sm font-medium text-dark-text-secondary mb-2">
+                      Website Logo
+                    </label>
+                    <ImageUpload
+                      value={watchBranding("logo_url")}
+                      onChange={(url) => setBranding("logo_url", url)}
+                    />
+                    <p className="text-xs text-dark-text-secondary mt-2">
+                      Displayed in the navigation bar. Transparent PNG
+                      recommended.
+                    </p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-dark-text-secondary mb-2">
+                      Website Favicon
+                    </label>
+                    <ImageUpload
+                      value={watchBranding("favicon_url")}
+                      onChange={(url) => setBranding("favicon_url", url)}
+                    />
+                    <p className="text-xs text-dark-text-secondary mt-2">
+                      Browser tab icon. 32x32px or 16x16px PNG/ICO recommended.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-6 py-2 bg-white text-dark-bg font-bold rounded-lg hover:bg-white/90"
+                >
+                  {loading ? "Saving..." : "Save Branding"}
+                </button>
+              </form>
+            )}
           </div>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Toaster } from "react-hot-toast";
+import { supabase } from "./lib/supabase";
 import { RouterProvider, useRouter } from "./contexts/RouterContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { Navigation } from "./components/Navigation";
@@ -12,6 +13,7 @@ import { Photos } from "./pages/Photos";
 import { About } from "./pages/About";
 import { Contact } from "./pages/Contact";
 import { Resume } from "./pages/Resume";
+import { Tools } from "./pages/Tools";
 import { Footer } from "./components/Footer";
 import { ProjectDetail } from "./pages/ProjectDetail";
 import { Login } from "./pages/Login";
@@ -33,6 +35,29 @@ import { BlogDetail } from "./pages/BlogDetail";
 function AppContent() {
   const { currentPage, projectSlug } = useRouter();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [profile, setProfile] = useState<any>(null);
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const fetchProfile = async () => {
+    const { data } = await supabase.from("profile").select("*").single();
+    if (data) {
+      setProfile(data);
+      if (data.favicon_url) {
+        let link = document.querySelector(
+          "link[rel~='icon']"
+        ) as HTMLLinkElement;
+        if (!link) {
+          link = document.createElement("link");
+          link.rel = "icon";
+          document.head.appendChild(link);
+        }
+        link.href = data.favicon_url;
+      }
+    }
+  };
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -66,6 +91,8 @@ function AppContent() {
         return <Contact />;
       case "resume":
         return <Resume />;
+      case "tools":
+        return <Tools />;
       case "login":
         return <Login />;
       case "admin":
@@ -108,7 +135,10 @@ function AppContent() {
           },
         }}
       />
-      <Navigation onOpenSearch={() => setIsSearchOpen(true)} />
+      <Navigation
+        onOpenSearch={() => setIsSearchOpen(true)}
+        logoUrl={profile?.logo_url}
+      />
       {renderPage()}
       <CommandPalette
         isOpen={isSearchOpen}

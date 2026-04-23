@@ -1,15 +1,31 @@
+import { useEffect, useState } from "react";
 import {
   Facebook,
   Instagram,
   Linkedin,
   Mail,
   Github,
-  ArrowUp,
+  Twitter,
 } from "lucide-react";
 import { useRouter } from "../contexts/RouterContext";
+import { supabase } from "../lib/supabase";
 
 export function Footer() {
   const { navigate } = useRouter();
+  const [profile, setProfile] = useState<any>(null);
+
+  useEffect(() => {
+    fetchProfile();
+  }, []);
+
+  const fetchProfile = async () => {
+    try {
+      const { data } = await supabase.from("profile").select("*").single();
+      if (data) setProfile(data);
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+    }
+  };
 
   const exploreLinks = [
     { label: "Projects", page: "projects" as const },
@@ -25,33 +41,47 @@ export function Footer() {
     { label: "Email Me", page: "contact" as const },
   ];
 
+  const social = profile?.social_links || {};
+  const email = social.email || "contact@shourai.dev";
+
   const socialIcons = [
     {
       icon: Facebook,
-      href: "https://facebook.com",
+      href: social.facebook || "https://facebook.com",
       label: "Facebook",
+      show: !!social.facebook,
     },
     {
       icon: Instagram,
-      href: "https://instagram.com",
+      href: social.instagram || "https://instagram.com",
       label: "Instagram",
+      show: !!social.instagram,
+    },
+    {
+      icon: Twitter,
+      href: social.twitter || "https://twitter.com",
+      label: "Twitter",
+      show: !!social.twitter,
     },
     {
       icon: Linkedin,
-      href: "https://linkedin.com",
+      href: social.linkedin || "https://linkedin.com",
       label: "LinkedIn",
+      show: !!social.linkedin,
     },
     {
       icon: Mail,
-      href: "mailto:contact@shourai.dev",
+      href: `mailto:${email}`,
       label: "Email",
+      show: true,
     },
     {
       icon: Github,
-      href: "https://github.com",
+      href: social.github || "https://github.com",
       label: "GitHub",
+      show: !!social.github,
     },
-  ];
+  ].filter((item) => item.show);
 
   return (
     <footer className="bg-dark-bg backdrop-blur-md shadow-sm border-t border-dark-border">

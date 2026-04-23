@@ -2,6 +2,7 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
+import TextAlign from "@tiptap/extension-text-align";
 import {
   Bold,
   Italic,
@@ -20,6 +21,11 @@ import {
   Minus,
   Undo as UndoIcon,
   Redo as RedoIcon,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  AlignJustify,
+  WrapText,
 } from "lucide-react";
 
 interface RichTextEditorProps {
@@ -35,12 +41,15 @@ export function RichTextEditor({ content, onChange }: RichTextEditorProps) {
         openOnClick: false,
       }),
       Image,
+      TextAlign.configure({
+        types: ["heading", "paragraph"],
+      }),
     ],
     content: content,
     editorProps: {
       attributes: {
         class:
-          "prose prose-invert max-w-none focus:outline-none min-h-[300px] p-4 text-dark-text",
+          "prose prose-invert max-w-none focus:outline-none min-h-[300px] p-4 text-dark-text [&_p]:my-2 [&_h1]:my-4 [&_h2]:my-3 [&_h3]:my-3",
       },
     },
     onUpdate: ({ editor }) => {
@@ -74,6 +83,7 @@ export function RichTextEditor({ content, onChange }: RichTextEditorProps) {
     <div className="border border-dark-border rounded-xl bg-dark-bg/50 overflow-hidden">
       {/* Toolbar */}
       <div className="flex flex-wrap gap-1 p-2 bg-dark-hover/50 border-b border-dark-border">
+        {/* Headings */}
         <ToolbarButton
           onClick={() =>
             editor.chain().focus().toggleHeading({ level: 1 }).run()
@@ -95,8 +105,34 @@ export function RichTextEditor({ content, onChange }: RichTextEditorProps) {
           isActive={editor.isActive("heading", { level: 3 })}
           icon={<Heading3 size={18} />}
         />
+
         <div className="w-px h-6 bg-dark-border mx-1 self-center" />
 
+        {/* Alignment */}
+        <ToolbarButton
+          onClick={() => editor.chain().focus().setTextAlign("left").run()}
+          isActive={editor.isActive({ textAlign: "left" })}
+          icon={<AlignLeft size={18} />}
+        />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().setTextAlign("center").run()}
+          isActive={editor.isActive({ textAlign: "center" })}
+          icon={<AlignCenter size={18} />}
+        />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().setTextAlign("right").run()}
+          isActive={editor.isActive({ textAlign: "right" })}
+          icon={<AlignRight size={18} />}
+        />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().setTextAlign("justify").run()}
+          isActive={editor.isActive({ textAlign: "justify" })}
+          icon={<AlignJustify size={18} />}
+        />
+
+        <div className="w-px h-6 bg-dark-border mx-1 self-center" />
+
+        {/* Formatting */}
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBold().run()}
           isActive={editor.isActive("bold")}
@@ -110,16 +146,19 @@ export function RichTextEditor({ content, onChange }: RichTextEditorProps) {
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleCode().run()}
           isActive={editor.isActive("code")}
-          icon={<Code size={18} title="Inline Code" />}
+          icon={<Code size={18} />}
+          title="Inline Code"
         />
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleCodeBlock().run()}
           isActive={editor.isActive("codeBlock")}
-          icon={<TerminalSquare size={18} title="Code Block" />}
+          icon={<TerminalSquare size={18} />}
+          title="Code Block"
         />
 
         <div className="w-px h-6 bg-dark-border mx-1 self-center" />
 
+        {/* Lists & Tools */}
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBulletList().run()}
           isActive={editor.isActive("bulletList")}
@@ -138,11 +177,19 @@ export function RichTextEditor({ content, onChange }: RichTextEditorProps) {
         <ToolbarButton
           onClick={() => editor.chain().focus().setHorizontalRule().run()}
           isActive={false}
-          icon={<Minus size={18} title="Horizontal Rule" />}
+          icon={<Minus size={18} />}
+          title="Horizontal Rule"
+        />
+        <ToolbarButton
+          onClick={() => editor.chain().focus().setHardBreak().run()}
+          isActive={false}
+          icon={<WrapText size={18} />}
+          title="Hard Break (Shift+Enter)"
         />
 
         <div className="w-px h-6 bg-dark-border mx-1 self-center" />
 
+        {/* Media */}
         <ToolbarButton
           onClick={setLink}
           isActive={editor.isActive("link")}
@@ -178,14 +225,17 @@ const ToolbarButton = ({
   onClick,
   isActive,
   icon,
+  title,
 }: {
   onClick: () => void;
   isActive: boolean;
   icon: React.ReactNode;
+  title?: string;
 }) => (
   <button
     type="button"
     onClick={onClick}
+    title={title}
     className={`p-2 rounded-lg transition-colors ${
       isActive
         ? "bg-primary text-white"
